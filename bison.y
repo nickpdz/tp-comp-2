@@ -1,20 +1,13 @@
-%define parse.error verbose
 %{
-	#include<stdio.h>
-	void yyerror();
+	#include <stdio.h>
+	#include <string.h>
+	#include "tds.c"
+	void yyerror(char*);
 	int yylex(void);
-	int cantAsig=0;
-	int cantVal=0;
-	extern int yylineno;
+	int linea=1;
 %}
 
 /*
-	Comandos:
-	flex flex.l
-	bison -o y.tab.c -d bison.y
-	gcc -o bison lex.yy.c y.tab.c
-	bison.exe < sentencias.txt
-	
 	S = sentencias
 	D = declaraciones
 	A = asignaciones
@@ -27,8 +20,8 @@
 
 	Gramatica:
 	G(P)
-  P-> S P | S
-  S-> D SEMI | A SEMI | IO SEMI | IF | FOR | WHILE | DO
+	P-> S P | S
+	S-> D SEMI | A SEMI | IO SEMI | IF | FOR | WHILE | DO
 	D-> T id | T id = DV | T id = E | T id = C
 	A-> id = DV | id = E | id = C
 	IO-> println DV | println E | System.console().readLine() | System.console().readLine cad
@@ -37,132 +30,182 @@
 	FOR-> for(D; C; ID++) {P} || for(D; C; ID--) {P}
 	WHILE-> while( C ) {P}
 	DO-> do {P} while( C )
-	T-> boolean | short	| int | long | float | double | char | String | def | var
+	T-> boolean | short | int | long | float | double | char | String | def | var
 	DV-> num | numr | id | cad | true | false
-	E-> DV + DV | DV - DV | DV / DV | DV * DV | DV % DV | DV ** DV 
-	C-> DV > DV | DV < DV | DV >= DV | DV <= DV | DV == DV | DV === DV | DV != DV 
+	E-> DV + DV | DV - DV | DV / DV | DV * DV | DV % DV | DV ** DV
+	C-> DV > DV | DV < DV | DV >= DV | DV <= DV | DV == DV | DV === DV | DV != DV
 	SEMI-> ; | ε
 */
 
+%union{
+	char nom[20];
 
-%token BOOLEAN SHORT INT LONG FLOAT DOUBLE CHAR STRING DEF VAR IF ELSE WHILE DO FOR PRINTLN READ TRUE FALSE NUM NUMR CAD ID
+	struct{
+		char v[12], f[12];
+	}cond;
+}
+
+%token BOOLEAN SHORT INT LONG FLOAT DOUBLE CHAR STRING DEF VAR IF ELSE WHILE DO FOR PRINTLN READ
+%token <nom> TRUE FALSE NUM NUMR CAD ID
+%type <nom> e dv
+%type <cond> c
 
 %left '+' '-'
 %left '*' '/'
 
 %%
 
-p: s {cantVal++;} p
- | s													{cantVal++;}
- | error                       
+p: s p
+ | s
  ;
 
 s: d semi
  | a semi
  | io semi
  | if
- | for 
+ | for
  | while
  | do
- | error                            
  ;
 
-d: t ID																{printf("\nSent: Declaracion simple");}
- | t ID '=' dv												{printf("\nSent: Declaracion con asignacion");}
- | t ID '=' e													{printf("\nSent: Declaracion con asignacion aritmetica");}
- | t ID '=' c													{printf("\nSent: Declaracion con asignacion logica");}
+d: t ID									{/*printf("\nSent: Declaracion simple");*/}
+ | t ID '=' dv							{/*printf("\n%s = %s", $1, $4);*/}
+ | t ID '=' e							{/*printf("\n%s = %s", $1, $4);*/}
+ | t ID '=' c							{/*printf("\n%s = %s", $1, $4);*/}
  ;
 
-a: ID '=' dv													{printf("\nSent: Asignacion de datos");}
- | ID '=' e 													{printf("\nSent: Asignacion Aritmetica");}
- | ID '=' c 													{printf("\nSent: Asignacion Logica");}
- | error 
+a: ID '=' dv							{printf("\n%s = %s", $1, $3);}
+ | ID '=' e								{printf("\n%s = %s", $1, $3);}
+ | ID '=' c								{printf("\n%s = %s", $1, $3);}
  ;
 
-io: PRINTLN dv 												{printf("\nSent: de Impresion");} 
- | PRINTLN e 													{printf("\nSent: de Impresion");}
- | READ CAD 													{printf("\nSent: de Scaneo CON impresion de mensaje");}
- | READ '(' ')'												{printf("\nSent: de Scaneo SIN impresion de mensaje");}
- | error 
+io: PRINTLN dv							{printf("\noutput %s", $2);}
+ | PRINTLN e							{printf("\noutput %s", $2);}
+ | READ CAD								{printf("\ninput %s", $2);}
+ | READ '(' ')'							{printf("\ninput()");}
  ;
 
-if: IF '(' c ')' '{' p else						{/* el mensaje de decie en la regla ELSE */} 
- | error 
+if: IF '(' c ')' '{' p else				{/* el mensaje de decie en la regla ELSE */}
 ;
 
-else: '}' ELSE '{' p '}'							{printf("\nSent: IF - ELSE(compuesta)");}
- | '}'																{printf("\nSent: IF(simple)");}
- | error
+else: '}' ELSE '{' p '}'				{printf("\nSent: IF - ELSE(compuesta)");}
+ | '}'									{printf("\nSent: IF(simple)");}
  ;
 
-for:FOR'('d';'c';'ID'+''+'')''{'p'}'	{printf("\nSent: FOR");}
- | FOR'('d';'c';'ID'-''-'')''{'p'}'		{printf("\nSent: FOR");}
- | error 
+for:FOR '(' d ';' c ';' ID '+' '+' ')' '{' p '}'	{printf("\nSent: FOR");}
+ | FOR '(' d ';' c ';' ID '-' '-' ')' '{' p '}'		{printf("\nSent: FOR");} 
  ;
 
-while: WHILE '(' c ')' '{' p '}'			{printf("\nSent: WHILE");}
- | error
+while: WHILE '(' c ')' '{' p '}'		{printf("\nSent: WHILE");}
  ;
 
-do: DO '{' p '}' WHILE '(' c ')'			{printf("\nSent: DO");}
- | error
+do: DO '{' p '}' WHILE '(' c ')'		{printf("\nSent: DO");}
 ;
 
-t: BOOLEAN														{/*printf("\nTipo de dato BOOLEAN");*/}
- | SHORT															{/*printf("\nTipo de dato SHORT");*/}
- | INT																{/*printf("\nTipo de dato INT");*/}
- | LONG																{/*printf("\nTipo de dato LONG");*/}
- | FLOAT															{/*printf("\nTipo de dato FLOAT");*/}
- | DOUBLE															{/*printf("\nTipo de dato DOUBLE");*/}
- | CHAR																{/*printf("\nTipo de dato CHAR");*/}
- | STRING															{/*printf("\nTipo de dato STRING");*/}
- | DEF																{/*printf("\nTipo de dato automatico con DEF");*/}
- | VAR																{/*printf("\nTipo de dato automatico con VAR");*/}
- | error 
+t: BOOLEAN								{/*printf("\nTipo de dato BOOLEAN");*/}
+ | SHORT								{/*printf("\nTipo de dato SHORT");*/}
+ | INT									{/*printf("\nTipo de dato INT");*/}
+ | LONG									{/*printf("\nTipo de dato LONG");*/}
+ | FLOAT								{/*printf("\nTipo de dato FLOAT");*/}
+ | DOUBLE								{/*printf("\nTipo de dato DOUBLE");*/}
+ | CHAR									{/*printf("\nTipo de dato CHAR");*/}
+ | STRING								{/*printf("\nTipo de dato STRING");*/}
+ | DEF									{/*printf("\nTipo de dato automatico con DEF");*/}
+ | VAR									{/*printf("\nTipo de dato automatico con VAR");*/} 
  ;
 
-dv: NUM																{/*printf("\nNUM");*/}
- | NUMR																{/*printf("\nNUMR");*/}
- | ID																	{/*printf("\nID");*/}
- | CAD																{/*printf("\nCAD");*/}
- | TRUE																{/*printf("\nTRUE");*/}
- | FALSE															{/*printf("\nFALSE");*/}
- | error                       
+dv: NUM									{strcpy($$, $1);}
+ | NUMR									{strcpy($$, $1);}
+ | ID									{strcpy($$, $1);}
+ | CAD									{strcpy($$, $1);}
+ | TRUE									{strcpy($$, "true");}
+ | FALSE								{strcpy($$, "false");}
  ;
 
-e: dv '+' dv													{/*printf("\nExp: Suma");*/}
- | dv '-' dv													{/*printf("\nExp: Resta");*/}
- | dv '/' dv													{/*printf("\nExp: Division");*/}
- | dv '*' dv													{/*printf("\nExp: Multiplicacion");*/}
- | dv '%' dv													{/*printf("\nExp: Modulo o resto");*/}
- | dv '*' '*' dv											{/*printf("\nExp: Potencia");*/}
- | error 
+e: dv '+' dv							{
+											nueva_tmp($$);
+											printf("\n%s = %s + %s", $$, $1, $3);
+										}
+ | dv '-' dv							{
+											nueva_tmp($$);
+											printf("\n%s = %s - %s", $$, $1, $3);
+										}
+ | dv '/' dv							{
+											nueva_tmp($$);
+											printf("\n%s = %s / %s", $$, $1, $3);
+										}
+ | dv '*' dv							{
+											nueva_tmp($$);
+											printf("\n%s = %s * %s", $$, $1, $3);
+										}
+ | dv '%' dv							{
+											nueva_tmp($$);
+											printf("\n%s = %s % %s", $$, $1, $3);
+										}
+ | dv '*' '*' dv						{
+											nueva_tmp($$);
+											printf("\n%s = %s ** %s", $$, $1, $4);
+										}
+ | '(' e ')'							{strcpy($$, $2);}
  ;
 
-c: dv '>' dv													{printf("\nCond: Mayor Que");}
- | dv '<' dv													{printf("\nCond: Menor Que");}
- | dv '>' '=' dv											{printf("\nCond: Mayor o Igual Que");}
- | dv '<' '=' dv											{printf("\nCond: Menor o Igual Que");}
- | dv '=' '=' dv											{printf("\nCond: Igual");}
- | dv '=' '=' '=' dv									{printf("\nCond: Identico");}
- | dv '!' '=' dv											{printf("\nCond: Distinto");}
- | error        
+c: dv '>' dv							{
+											nueva_etq($$.v);
+											nueva_etq($$.f);
+											printf("\nif %s > %s goto %s", $1, $3, $$.v);
+											printf("\ngoto %s", $$.f);
+										}
+ | dv '<' dv							{
+											nueva_etq($$.v);
+											nueva_etq($$.f);
+											printf("\nif %s < %s goto %s", $1, $3, $$.v);
+											printf("\ngoto %s", $$.f);
+										}
+ | dv '>' '=' dv						{
+											nueva_etq($$.v);
+											nueva_etq($$.f);
+											printf("\nif %s >= %s goto %s", $1, $4, $$.v);
+											printf("\ngoto %s", $$.f);
+										}
+ | dv '<' '=' dv						{
+											nueva_etq($$.v);
+											nueva_etq($$.f);
+											printf("\nif %s <= %s goto %s", $1, $4, $$.v);
+											printf("\ngoto %s", $$.f);
+										}
+ | dv '=' '=' dv						{
+											nueva_etq($$.v);
+											nueva_etq($$.f);
+											printf("\nif %s == %s goto %s", $1, $4, $$.v);
+											printf("\ngoto %s", $$.f);
+										}
+ | dv '=' '=' '=' dv					{
+											nueva_etq($$.v);
+											nueva_etq($$.f);
+											printf("\nif %s === %s goto %s", $1, $5, $$.v);
+											printf("\ngoto %s", $$.f);
+										}
+ | dv '!' '=' dv						{
+											nueva_etq($$.v);
+											nueva_etq($$.f);
+											printf("\nif %s != %s goto %s", $1, $4, $$.v);
+											printf("\ngoto %s", $$.f);
+										}
  ;
 
-semi: %empty 													{printf("\nSin ; final");}
- | ';' 																{printf("\nCon ; final");}
+semi: %empty							{}
+ | ';'									{}
  ;
 
 %%
 
 void main(){
-	printf("Compiladores I - Trabajo practico\n");
+	printf("Compiladores II - Trabajo practico\n");
 	printf("Lenguaje: Groovy\n");
 	yyparse();
-	printf("\n\n\tFin del analisis de las sentencias.");
-	printf("\nCantidad de sentencias validas: %d", cantVal);
+	printf("\n\n\tTraduccion a tercetos finalizada.");
 }
 
 void yyerror(char *s){
-	printf("\n%s, en linea nro: %d", s, yylineno);
+	printf("\n%s, en linea nro: %d", s, linea);
 }

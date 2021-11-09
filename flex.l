@@ -1,45 +1,45 @@
 %option noyywrap
-%option yylineno
 %{
-	#include<stdio.h>
-	#include"y.tab.h"
+	#include <stdio.h>
+	#include <string.h>
+	#include "y.tab.h"
+	extern int linea;
+	extern void yyerror(char*);
 %}
 
 %%
 
+boolean							{return BOOLEAN;}
+short							{return SHORT;}
+int								{return INT;}
+long							{return LONG;}
+float							{return FLOAT;}
+double							{return DOUBLE;}
+char							{return CHAR;}
+String							{return STRING;}
+def								{return DEF;}
+var								{return VAR;}
 
+if								{return IF;}
+else							{return ELSE;}
+while							{return WHILE;}
+do								{return DO;}
+for								{return FOR;}
 
-boolean												{return BOOLEAN;}
-short													{return SHORT;}
-int														{return INT;}
-long													{return LONG;}
-float													{return FLOAT;}
-double												{return DOUBLE;}
-char													{return CHAR;}
-String												{return STRING;}
-def														{return DEF;}
-var														{return VAR;}
-
-if														{return IF;}
-else													{return ELSE;}
-while													{return WHILE;}
-do														{return DO;}
-for														{return FOR;}
-
-println												{return PRINTLN;}
+println							{return PRINTLN;}
 "System.console().readLine"		{return READ;}
 
-true													{return TRUE;}
-false													{return FALSE;}
-[0-9]+												{return NUM;}
-[0-9]*\.[0-9]+								{return NUMR;}
-\".*\"												{return CAD;}
+true							{return TRUE;}
+false							{return FALSE;}
+[0-9]+							{strcpy(yylval.nom, yytext); return NUM;}
+[0-9]*\.[0-9]+					{strcpy(yylval.nom, yytext); return NUMR;}
+\".*\"							{strcpy(yylval.nom, yytext); return CAD;}
 
-[\=\+\-\*\/\<\>\:\(\)\&\{\}\%]	{return yytext[0];}
+[\ \t]+ 						{;}
+\n 								{linea++;}
 
-[a-zA-Z$\_][a-zA-Z0-9\_]*			{return ID;}
+[a-zA-Z$\_][a-zA-Z0-9\_]*		{strcpy(yylval.nom, yytext); return ID;}
+[^a-zA-Z0-9\ \n] 				{return yytext[0];} /* simbolos */
 
-\n 														{}
-[\ \t\n]+ 										{;}
 
 %%

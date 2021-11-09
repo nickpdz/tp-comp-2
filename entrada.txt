@@ -1,16 +1,5 @@
-if(a == b ){
-   println "Distintos"
-} else {
-   println "Iguales";
-}
-
-int a = 123;
-String cadena = "Hola mundo"
-System.console().readLine()
-
-while(a >= cadena){
-   println a
-   a = a - 1
-}
-
-var variable == "texto"
+a = 2+5;
+println a;
+System.console().readLine "hola mundo";
+boolean b
+b = a > 5
