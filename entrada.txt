@@ -1,0 +1,16 @@
+if(a == b ){
+   println "Distintos"
+} else {
+   println "Iguales";
+}
+
+int a = 123;
+String cadena = "Hola mundo"
+System.console().readLine()
+
+while(a >= cadena){
+   println a
+   a = a - 1
+}
+
+var variable == "texto"

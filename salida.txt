@@ -1,0 +1,27 @@
+Compiladores I - Trabajo practico
+Lenguaje: Groovy
+
+Cond: Igual
+Sent: de Impresion
+Sin ; final;
+Sent: de Impresion
+Sin ; final
+Sent: IF - ELSE(compuesta);
+Sent: Declaracion con asignacion
+Sin ; final
+Sent: Declaracion con asignacion
+Sin ; final
+Sent: de Scaneo SIN impresion de mensaje
+Sin ; final
+Cond: Mayor o Igual Que
+Sent: de Impresion
+Sin ; final
+Sent: Asignacion Aritmetica
+Sin ; final
+Sent: WHILE
+syntax error, unexpected '=', en linea nro: 16
+Sent: Declaracion con asignacion
+Sin ; final
+
+	Fin del analisis de las sentencias.
+Cantidad de sentencias validas: 10
