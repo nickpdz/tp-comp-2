@@ -45,8 +45,8 @@
 	}cond;
 }
 
-%token BOOLEAN SHORT INT LONG FLOAT DOUBLE CHAR STRING DEF VAR IF ELSE WHILE DO FOR PRINTLN READ
-%token <nom> TRUE FALSE NUM NUMR CAD ID
+%token BOOLEAN SHORT INT LONG FLOAT DOUBLE CHAR STRING DEF VAR ELSE PRINTLN READ
+%token <nom> TRUE FALSE NUM NUMR CAD ID IF FOR WHILE DO
 %type <nom> e dv
 %type <cond> c
 
@@ -85,22 +85,44 @@ io: PRINTLN dv							{printf("\noutput %s", $2);}
  | READ '(' ')'							{printf("\ninput()");}
  ;
 
-if: IF '(' c ')' '{' p else				{/* el mensaje de decie en la regla ELSE */}
+if: IF									{nueva_etq($1);}
+ '(' c ')'								{printf("\n%s", $4.v);}
+ '{' p									{
+											printf("\ngoto %s", $1);
+											printf("\n%s", $4.f);
+										}
+ else									{printf("\n%s", $1);}
 ;
 
-else: '}' ELSE '{' p '}'				{printf("\nSent: IF - ELSE(compuesta)");}
- | '}'									{printf("\nSent: IF(simple)");}
+else: '}' ELSE '{' p '}'
+ | '}'
  ;
 
 for:FOR '(' d ';' c ';' ID '+' '+' ')' '{' p '}'	{printf("\nSent: FOR");}
  | FOR '(' d ';' c ';' ID '-' '-' ')' '{' p '}'		{printf("\nSent: FOR");} 
  ;
 
-while: WHILE '(' c ')' '{' p '}'		{printf("\nSent: WHILE");}
+while: WHILE							{
+											nueva_etq($1);
+											printf("\n%s", $1);
+										}
+ '(' c ')'								{printf("\n%s", $4.v);}
+ '{' p '}'								{
+											printf("\ngoto %s", $1);
+											printf("\n%s", $4.f);
+										}
  ;
 
-do: DO '{' p '}' WHILE '(' c ')'		{printf("\nSent: DO");}
-;
+do: DO									{
+											nueva_etq($1);
+											printf("\n%s", $1);
+										}
+ '{' p '}' WHILE '(' c ')'				{
+											printf("\n%s", $8.v);
+											printf("\ngoto %s", $1);
+											printf("\n%s", $8.f);
+										}
+ ;
 
 t: BOOLEAN								{/*printf("\nTipo de dato BOOLEAN");*/}
  | SHORT								{/*printf("\nTipo de dato SHORT");*/}
