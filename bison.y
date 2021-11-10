@@ -1,10 +1,11 @@
+%define parse.error verbose
 %{
 	#include <stdio.h>
 	#include <string.h>
 	#include "tds.c"
 	void yyerror(char*);
 	int yylex(void);
-	int linea=1;
+	extern int yylineno;
 %}
 
 /*
@@ -62,6 +63,7 @@ s: d semi
  | if
  | while
  | do
+ | error
  ;
 
 d: t ID
@@ -203,12 +205,12 @@ semi: %empty
 %%
 
 void main(){
-	printf("Compiladores II - Trabajo practico\n");
-	printf("Lenguaje: Groovy\n");
+	printf("Compiladores II - Trabajo practico. Lenguaje: Groovy\n");
+	printf("***** Inicio de traducción *****\n");
 	yyparse();
-	printf("\n\n\tTraduccion a tercetos finalizada.");
+	printf("\n\n***** Traduccion a tercetos finalizada *****");
 }
 
 void yyerror(char *s){
-	printf("\n%s, en linea nro: %d", s, linea);
+	printf("\n%s, en linea nro: %d", s, yylineno);
 }
