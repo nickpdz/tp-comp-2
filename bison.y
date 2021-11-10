@@ -13,7 +13,6 @@
 	A = asignaciones
 	IO = input - output
 	T = tipos de datos
-	DV = data value
 	E = expresiones
 	C = condiciones
 	SEMI = punto y coma
@@ -22,18 +21,16 @@
 	G(P)
 	P-> S P | S
 	S-> D SEMI | A SEMI | IO SEMI | IF | FOR | WHILE | DO
-	D-> T id | T id = DV | T id = E | T id = C
-	A-> id = DV | id = E | id = C
-	IO-> println DV | println E | System.console().readLine() | System.console().readLine cad
+	D-> T id | T id = E
+	A-> id = E
+	IO-> println E | System.console().readLine() | System.console().readLine cad
 	IF-> if( C ){P ELSE
 	ELSE -> } else { P } | }
-	FOR-> for(D; C; ID++) {P} || for(D; C; ID--) {P}
 	WHILE-> while( C ) {P}
 	DO-> do {P} while( C )
 	T-> boolean | short | int | long | float | double | char | String | def | var
-	DV-> num | numr | id | cad | true | false
-	E-> DV + DV | DV - DV | DV / DV | DV * DV | DV % DV | DV ** DV
-	C-> DV > DV | DV < DV | DV >= DV | DV <= DV | DV == DV | DV === DV | DV != DV
+	E-> E + E | E - E | E / E | E * E | E ** E | (E) | num | numr | id | cad | true | false
+	C-> E > E | E < E | E >= E | E <= E | E == E | E === E | E != E
 	SEMI-> ; | ε
 */
 
@@ -46,8 +43,8 @@
 }
 
 %token BOOLEAN SHORT INT LONG FLOAT DOUBLE CHAR STRING DEF VAR ELSE PRINTLN READ
-%token <nom> TRUE FALSE NUM NUMR CAD ID IF FOR WHILE DO
-%type <nom> e dv
+%token <nom> TRUE FALSE NUM NUMR CAD ID IF WHILE DO
+%type <nom> e
 %type <cond> c
 
 %left '+' '-'
@@ -63,26 +60,20 @@ s: d semi
  | a semi
  | io semi
  | if
- | for
  | while
  | do
  ;
 
-d: t ID									{/*printf("\nSent: Declaracion simple");*/}
- | t ID '=' dv							{/*printf("\n%s = %s", $1, $4);*/}
+d: t ID
  | t ID '=' e							{/*printf("\n%s = %s", $1, $4);*/}
- | t ID '=' c							{/*printf("\n%s = %s", $1, $4);*/}
  ;
 
-a: ID '=' dv							{printf("\n%s = %s", $1, $3);}
- | ID '=' e								{printf("\n%s = %s", $1, $3);}
- | ID '=' c								{printf("\n%s = %s", $1, $3);}
+a: ID '=' e								{printf("\n%s = %s", $1, $3);}
  ;
 
-io: PRINTLN dv							{printf("\noutput %s", $2);}
- | PRINTLN e							{printf("\noutput %s", $2);}
- | READ CAD								{printf("\ninput %s", $2);}
+io: PRINTLN e							{printf("\noutput %s", $2);}
  | READ '(' ')'							{printf("\ninput()");}
+ | READ CAD								{printf("\ninput %s", $2);}
  ;
 
 if: IF									{nueva_etq($1);}
@@ -96,10 +87,6 @@ if: IF									{nueva_etq($1);}
 
 else: '}' ELSE '{' p '}'
  | '}'
- ;
-
-for:FOR '(' d ';' c ';' ID '+' '+' ')' '{' p '}'	{printf("\nSent: FOR");}
- | FOR '(' d ';' c ';' ID '-' '-' ')' '{' p '}'		{printf("\nSent: FOR");} 
  ;
 
 while: WHILE							{
@@ -124,19 +111,40 @@ do: DO									{
 										}
  ;
 
-t: BOOLEAN								{/*printf("\nTipo de dato BOOLEAN");*/}
- | SHORT								{/*printf("\nTipo de dato SHORT");*/}
- | INT									{/*printf("\nTipo de dato INT");*/}
- | LONG									{/*printf("\nTipo de dato LONG");*/}
- | FLOAT								{/*printf("\nTipo de dato FLOAT");*/}
- | DOUBLE								{/*printf("\nTipo de dato DOUBLE");*/}
- | CHAR									{/*printf("\nTipo de dato CHAR");*/}
- | STRING								{/*printf("\nTipo de dato STRING");*/}
- | DEF									{/*printf("\nTipo de dato automatico con DEF");*/}
- | VAR									{/*printf("\nTipo de dato automatico con VAR");*/} 
+t: BOOLEAN
+ | SHORT
+ | INT
+ | LONG
+ | FLOAT
+ | DOUBLE
+ | CHAR
+ | STRING
+ | DEF
+ | VAR
  ;
 
-dv: NUM									{strcpy($$, $1);}
+e: e '+' e								{
+											nueva_tmp($$);
+											printf("\n%s = %s + %s", $$, $1, $3);
+										}
+ | e '-' e								{
+											nueva_tmp($$);
+											printf("\n%s = %s - %s", $$, $1, $3);
+										}
+ | e '/' e								{
+											nueva_tmp($$);
+											printf("\n%s = %s / %s", $$, $1, $3);
+										}
+ | e '*' e								{
+											nueva_tmp($$);
+											printf("\n%s = %s * %s", $$, $1, $3);
+										}
+ | e '*' '*' e							{
+											nueva_tmp($$);
+											printf("\n%s = %s ** %s", $$, $1, $4);
+										}
+ | '(' e ')'							{strcpy($$, $2);}
+ | NUM									{strcpy($$, $1);}
  | NUMR									{strcpy($$, $1);}
  | ID									{strcpy($$, $1);}
  | CAD									{strcpy($$, $1);}
@@ -144,70 +152,43 @@ dv: NUM									{strcpy($$, $1);}
  | FALSE								{strcpy($$, "false");}
  ;
 
-e: dv '+' dv							{
-											nueva_tmp($$);
-											printf("\n%s = %s + %s", $$, $1, $3);
-										}
- | dv '-' dv							{
-											nueva_tmp($$);
-											printf("\n%s = %s - %s", $$, $1, $3);
-										}
- | dv '/' dv							{
-											nueva_tmp($$);
-											printf("\n%s = %s / %s", $$, $1, $3);
-										}
- | dv '*' dv							{
-											nueva_tmp($$);
-											printf("\n%s = %s * %s", $$, $1, $3);
-										}
- | dv '%' dv							{
-											nueva_tmp($$);
-											printf("\n%s = %s % %s", $$, $1, $3);
-										}
- | dv '*' '*' dv						{
-											nueva_tmp($$);
-											printf("\n%s = %s ** %s", $$, $1, $4);
-										}
- | '(' e ')'							{strcpy($$, $2);}
- ;
-
-c: dv '>' dv							{
+c: e '>' e								{
 											nueva_etq($$.v);
 											nueva_etq($$.f);
 											printf("\nif %s > %s goto %s", $1, $3, $$.v);
 											printf("\ngoto %s", $$.f);
 										}
- | dv '<' dv							{
+ | e '<' e								{
 											nueva_etq($$.v);
 											nueva_etq($$.f);
 											printf("\nif %s < %s goto %s", $1, $3, $$.v);
 											printf("\ngoto %s", $$.f);
 										}
- | dv '>' '=' dv						{
+ | e '>' '=' e							{
 											nueva_etq($$.v);
 											nueva_etq($$.f);
 											printf("\nif %s >= %s goto %s", $1, $4, $$.v);
 											printf("\ngoto %s", $$.f);
 										}
- | dv '<' '=' dv						{
+ | e '<' '=' e							{
 											nueva_etq($$.v);
 											nueva_etq($$.f);
 											printf("\nif %s <= %s goto %s", $1, $4, $$.v);
 											printf("\ngoto %s", $$.f);
 										}
- | dv '=' '=' dv						{
+ | e '=' '=' e							{
 											nueva_etq($$.v);
 											nueva_etq($$.f);
 											printf("\nif %s == %s goto %s", $1, $4, $$.v);
 											printf("\ngoto %s", $$.f);
 										}
- | dv '=' '=' '=' dv					{
+ | e '=' '=' '=' e						{
 											nueva_etq($$.v);
 											nueva_etq($$.f);
 											printf("\nif %s === %s goto %s", $1, $5, $$.v);
 											printf("\ngoto %s", $$.f);
 										}
- | dv '!' '=' dv						{
+ | e '!' '=' e							{
 											nueva_etq($$.v);
 											nueva_etq($$.f);
 											printf("\nif %s != %s goto %s", $1, $4, $$.v);
@@ -215,8 +196,8 @@ c: dv '>' dv							{
 										}
  ;
 
-semi: %empty							{}
- | ';'									{}
+semi: %empty
+ | ';'
  ;
 
 %%

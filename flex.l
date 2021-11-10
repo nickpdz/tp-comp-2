@@ -24,7 +24,6 @@ if								{return IF;}
 else							{return ELSE;}
 while							{return WHILE;}
 do								{return DO;}
-for								{return FOR;}
 
 println							{return PRINTLN;}
 "System.console().readLine"		{return READ;}
