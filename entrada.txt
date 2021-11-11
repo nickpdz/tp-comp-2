@@ -1,5 +1,20 @@
-a = 2+5;
-println a;
-System.console().readLine "hola mundo";
-boolean b
-b = a > 5
+int a = 2 ** 3;
+
+if(a < 10){
+    println "valor menor a 10"
+} else {
+    println "valor mayor a 10"
+}
+
+boolean cond = true
+
+while (cond === true){
+    System.console().readLine "Ingrese valores"
+}
+
+var cont = 0;
+do {
+    cont = cont + 1
+} while(cont < 100)
+
+println "Contador:"+cont

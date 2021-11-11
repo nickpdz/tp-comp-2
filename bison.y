@@ -21,7 +21,7 @@
 	Gramatica:
 	G(P)
 	P-> S P | S
-	S-> D SEMI | A SEMI | IO SEMI | IF | FOR | WHILE | DO
+	S-> D SEMI | A SEMI | IO SEMI | IF | WHILE | DO
 	D-> T id | T id = E
 	A-> id = E
 	IO-> println E | System.console().readLine() | System.console().readLine cad
@@ -67,7 +67,7 @@ s: d semi
  ;
 
 d: t ID
- | t ID '=' e							{/*printf("\n%s = %s", $1, $4);*/}
+ | t ID '=' e							{printf("\n%s = %s", $2, $4);}
  ;
 
 a: ID '=' e								{printf("\n%s = %s", $1, $3);}

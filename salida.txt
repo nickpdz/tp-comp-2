@@ -1,27 +1,34 @@
-Compiladores I - Trabajo practico
-Lenguaje: Groovy
+Compiladores II - Trabajo practico. Lenguaje: Groovy
+***** Inicio de traducción *****
 
-Cond: Igual
-Sent: de Impresion
-Sin ; final;
-Sent: de Impresion
-Sin ; final
-Sent: IF - ELSE(compuesta);
-Sent: Declaracion con asignacion
-Sin ; final
-Sent: Declaracion con asignacion
-Sin ; final
-Sent: de Scaneo SIN impresion de mensaje
-Sin ; final
-Cond: Mayor o Igual Que
-Sent: de Impresion
-Sin ; final
-Sent: Asignacion Aritmetica
-Sin ; final
-Sent: WHILE
-syntax error, unexpected '=', en linea nro: 16
-Sent: Declaracion con asignacion
-Sin ; final
+tmp1 = 2 ** 3
+a = tmp1
+if a < 10 goto etq2
+goto etq3
+etq2
+output "valor menor a 10"
+goto etq1
+etq3
+output "valor mayor a 10"
+etq1
+cond = true
+etq4
+if cond === true goto etq5
+goto etq6
+etq5
+input "Ingrese valores"
+goto etq4
+etq6
+cont = 0
+etq7
+tmp2 = cont + 1
+cont = tmp2
+if cont < 100 goto etq8
+goto etq9
+etq8
+goto etq7
+etq9
+tmp3 = "Contador:" + cont
+output tmp3
 
-	Fin del analisis de las sentencias.
-Cantidad de sentencias validas: 10
+***** Traduccion a tercetos finalizada *****
